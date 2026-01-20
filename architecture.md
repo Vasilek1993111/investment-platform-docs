@@ -1,12 +1,7 @@
 ```mermaid
-C4Container
-title DataLoaderService
-Person(user, "User")
-System_Boundary(svc, "Service") {
-  Container(app, "Spring Boot API")
-  ContainerDb(db, "PostgreSQL")
-}
-External(tinkoff, "Tinkoff API")
-user --> app
-app --> tinkoff : GET prices
-app --> db : INSERT data
+flowchart TD
+    User[User/Developer] --> App[InvestmentDataLoaderService]
+    App --> Tinkoff[Tinkoff Invest API]
+    App --> PG[(PostgreSQL DB)]
+    Tinkoff -.->|prices, candles| App
+    App -.->|store data| PG
