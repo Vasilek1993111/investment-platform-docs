@@ -1,3 +1,4 @@
+```mermaid
 erDiagram
     instruments {
         varchar figi PK
