@@ -162,30 +162,9 @@ SELECT invest.bulk_insert_last_prices(
 
 ### 2.3. Функции анализа данных
 
-#### 2.3.1. `invest.analyze_candle_patterns(p_analysis_date DATE, p_consecutive_days INTEGER)`
-**Схема:** `invest`  
-**Тип:** FUNCTION  
-**Возвращает:** VOID
+**Примечание:** Функции для анализа паттернов свечей (`analyze_candle_patterns`, `get_candle_pattern_stats`) описаны в отдельном документе: [db-strategy-analysis-objects.md](./db-strategy-analysis-objects.md)
 
-**Описание:** Анализирует свечные паттерны для выявления инструментов с последовательными днями падения/роста.
-
-**Параметры:**
-- `p_analysis_date` (DATE) - Дата анализа
-- `p_consecutive_days` (INTEGER) - Количество последовательных дней для анализа
-
-**Логика:**
-- Вызывает функцию `invest_candles.analyze_candle_patterns`
-- Исключает праздники и выходные дни
-- Сохраняет результаты в таблицу `candle_pattern_analysis`
-
-**Пример использования:**
-```sql
-SELECT invest.analyze_candle_patterns('2025-01-15', 5);
-```
-
----
-
-#### 2.3.2. `invest.get_backtest_stats(p_analysis_date_from DATE, p_analysis_date_to DATE, p_figi VARCHAR)`
+#### 2.3.1. `invest.get_backtest_stats(p_analysis_date_from DATE, p_analysis_date_to DATE, p_figi VARCHAR)`
 **Схема:** `invest`  
 **Тип:** FUNCTION  
 **Возвращает:** RECORD
@@ -201,7 +180,7 @@ SELECT invest.analyze_candle_patterns('2025-01-15', 5);
 
 ---
 
-#### 2.3.3. `invest.get_session_analytics(p_figi VARCHAR, p_start_date DATE, p_end_date DATE)`
+#### 2.3.2. `invest.get_session_analytics(p_figi VARCHAR, p_start_date DATE, p_end_date DATE)`
 **Схема:** `invest`  
 **Тип:** FUNCTION  
 **Возвращает:** RECORD
@@ -222,7 +201,7 @@ SELECT * FROM invest.get_session_analytics('BBG004S68DD6', '2025-01-01', '2025-0
 
 ---
 
-#### 2.3.4. `invest.get_today_session_analytics(p_figi VARCHAR)`
+#### 2.3.3. `invest.get_today_session_analytics(p_figi VARCHAR)`
 **Схема:** `invest`  
 **Тип:** FUNCTION  
 **Возвращает:** RECORD
@@ -640,28 +619,20 @@ SELECT * FROM invest.daily_volume_aggregation WHERE figi = 'BBG004S68DD6';
 
 ### 5.2. Представления с обогащением данных
 
-#### 5.2.1. `invest.candle_pattern_analysis`
-**Источник:** `invest_candles.candle_pattern_analysis` + справочники  
-**Описание:** Представление анализа свечных паттернов с добавлением информации об инструментах.
+**Примечание:** Представление `invest.candle_pattern_analysis` описано в отдельном документе: [db-strategy-analysis-objects.md](./db-strategy-analysis-objects.md)
+
+#### 5.2.1. `invest.backtest_results`
+**Источник:** `invest_candles.backtest_results` + справочники  
+**Описание:** Представление результатов бэктестинга с добавлением информации об инструментах.
 
 **Дополнительные поля:**
 - `instrument_name` - Название инструмента (из shares/futures/indicatives)
 - `instrument_ticker` - Тикер инструмента
 - `instrument_type` - Тип инструмента (shares/futures/indicatives)
 
-**Логика:** LEFT JOIN с таблицами `shares`, `futures`, `indicatives` по FIGI
-
 ---
 
-#### 5.2.2. `invest.backtest_results`
-**Источник:** `invest_candles.backtest_results` + справочники  
-**Описание:** Представление результатов бэктестинга с добавлением информации об инструментах.
-
-**Дополнительные поля:** Аналогично `candle_pattern_analysis`
-
----
-
-#### 5.2.3. `invest.special_trading_hours`
+#### 5.2.2. `invest.special_trading_hours`
 **Источник:** `invest_candles.special_trading_hours` + справочники  
 **Описание:** Представление специальных торговых часов с информацией об инструментах.
 
@@ -671,19 +642,19 @@ SELECT * FROM invest.daily_volume_aggregation WHERE figi = 'BBG004S68DD6';
 
 ---
 
-#### 5.2.4. `invest.historical_price_extremes`
+#### 5.2.3. `invest.historical_price_extremes`
 **Источник:** `invest_views.historical_price_extremes`  
 **Описание:** Синоним для материализованного представления исторических экстремумов
 
 ---
 
-#### 5.2.5. `invest.history_volume_aggregation`
+#### 5.2.4. `invest.history_volume_aggregation`
 **Источник:** `invest_views.history_volume_aggregation`  
 **Описание:** Синоним для материализованного представления исторической агрегации объемов
 
 ---
 
-#### 5.2.6. `invest.today_volume_view`
+#### 5.2.5. `invest.today_volume_view`
 **Источник:** `invest_views.today_volume_view`  
 **Описание:** Представление с агрегированными объемами за сегодняшний день.
 
@@ -699,13 +670,13 @@ SELECT * FROM invest.today_volume_view WHERE figi = 'BBG004S68DD6';
 
 ---
 
-#### 5.2.7. `invest.close_prices_evening_session`
+#### 5.2.6. `invest.close_prices_evening_session`
 **Источник:** `invest_prices.close_prices_evening_session`  
 **Описание:** Синоним для таблицы цен закрытия вечерней сессии
 
 ---
 
-#### 5.2.8. `invest.data_quality_issues`
+#### 5.2.7. `invest.data_quality_issues`
 **Источник:** `invest_utils.data_quality_issues`  
 **Описание:** Синоним для таблицы проблем качества данных
 
@@ -819,10 +790,9 @@ REFRESH MATERIALIZED VIEW invest.historical_price_extremes;
 
 ### 8.3. Анализ паттернов и получение статистики
 
-```sql
--- Проанализировать паттерны за дату
-SELECT invest.analyze_candle_patterns('2025-01-15', 5);
+**Примечание:** Примеры использования функций анализа паттернов свечей см. в [db-strategy-analysis-objects.md](./db-strategy-analysis-objects.md)
 
+```sql
 -- Получить статистику бэктестинга
 SELECT * FROM invest.get_backtest_stats(
     '2025-01-01'::date,
